@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="baidu-site-verification" content="L6Lm9d5Crl"/>
+  
+  
+  
+  
+  <title>Android定位总结 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本文介绍了Android中常用的几种定位方式，仅供参考。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android定位总结">
+<meta property="og:url" content="http://yoursite.com/2017/07/17/Android定位总结/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本文介绍了Android中常用的几种定位方式，仅供参考。">
+<meta property="og:updated_time" content="2017-07-17T23:45:09.433Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android定位总结">
+<meta name="twitter:description" content="本文介绍了Android中常用的几种定位方式，仅供参考。">
+  
+    <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/img/favicon.png">
+  
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/animate.css/3.5.0/animate.min.css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  
+  
+      <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  
+  <!-- 加载特效 -->
+    <script src="/js/pace.js"></script>
+    <link href="/css/pace/pace-theme-flash.css" rel="stylesheet" />
+  <script>
+      var yiliaConfig = {
+          fancybox: true,
+          animate: true,
+          isHome: false,
+          isPost: true,
+          isArchive: false,
+          isTag: false,
+          isCategory: false,
+          open_in_new: false
+      }
+  </script>
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+        <a href="/" class="profilepic">
+            
+            <img lazy-src="/img/avatar.png" class="js-avatar">
+            
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">QiMeng Wang</a></h1>
+        </hgroup>
+        
+        
+            <form>
+                <input type="text" class="st-default-search-input search" id="local-search-input" placeholder=" Search...">
+            </form>
+            <div id="local-search-result"></div>
+        
+        
+            <script type="text/javascript">
+                (function() {
+                    'use strict';
+                    function getMatchData(keyword, data) {
+                        var matchData = [];
+                        for(var i =0;i<data.length;i++){
+                            if(data[i].title.toLowerCase().indexOf(keyword)>=0) 
+                                matchData.push(data[i])
+                        }
+                        return matchData;
+                    }
+                    var $input = $('#local-search-input');
+                    var $resultContent = $('#local-search-result');
+                    $input.keyup(function(){
+                        $.ajax({
+                            url: '/search.json',
+                            dataType: "json",
+                            success: function( json ) {
+                                var str='<ul class=\"search-result-list\">';                
+                                var keyword = $input.val().trim().toLowerCase();
+                                $resultContent.innerHTML = "";
+                                if ($input.val().trim().length <= 0) {
+                                    $resultContent.empty();
+                                    $('#switch-area').show();
+                                    return;
+                                }
+                                var results = getMatchData(keyword, json);
+                                if(results.length === 0){
+                                    $resultContent.empty();
+                                    $('#switch-area').show();
+                                    return;
+                                } 
+                                for(var i =0; i<results.length; i++){
+                                    str += "<li><a href='"+ results[i].url +"' class='search-result-title'>"+ results[i].title +"</a></li>";
+                                }
+                                str += "</ul>";
+                                $resultContent.empty();
+                                $resultContent.append(str);
+                                $('#switch-area').hide();
+                            }
+                        });
+                    });
+                })();
+            </script>
+        
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fl github"  target="_blank" href="/xxxxx" title="github">github</a>
+                            
+                                <a class="fl weibo"  target="_blank" href="/xxxxxxxx" title="weibo">weibo</a>
+                            
+                                <a class="fl rss"  target="_blank" href="/atom.xml" title="rss">rss</a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        
+                    </div>
+                </section>
+                
+                
+                
+                
+                <section class="switch-part switch-part3">
+                
+                    <div id="js-aboutme">Android/HUST</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>
+</div>
+
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">QiMeng Wang</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                
+                    <img lazy-src="/img/avatar.png" class="js-avatar">
+                
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">QiMeng Wang</a></h1>
+            </hgroup>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                <div class="social">
+                    
+                        <a class="github" target="_blank" href="/xxxxx" title="github">github</a>
+                    
+                        <a class="weibo" target="_blank" href="/xxxxxxxx" title="weibo">weibo</a>
+                    
+                        <a class="rss" target="_blank" href="/atom.xml" title="rss">rss</a>
+                    
+                </div>
+            </nav>
+        </header>                
+    </div>
+</nav>
+      <div class="body-wrap"><article id="post-Android定位总结" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a  href="/2017/07/17/Android定位总结/" class="article-date">
+      <time datetime="2017-07-17T23:32:11.000Z" itemprop="datePublished">2017-07-17</time>
+</a>
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android定位总结
+    </h1>
+  
+
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+
+        
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p>本文介绍了Android中常用的几种定位方式，仅供参考。<br><a id="more"></a></p>
+<h1 id="Android定位总结"><a href="#Android定位总结" class="headerlink" title="Android定位总结"></a>Android定位总结</h1><hr>
+<h2 id="常用的几种定位方式"><a href="#常用的几种定位方式" class="headerlink" title="常用的几种定位方式"></a>常用的几种定位方式</h2><p> Android开发中常用的定位方式有下面这几种：</p>
+<ul>
+<li>SDK：百度、高德、腾讯等公司都提供了位置服务，不过要先注册他们的开发者帐号，然后导入SDK就行了。具体怎么搞参考各家的文档就行了。</li>
+<li>GPS：利用手机的GPS模块获得GPS信号进行定位。</li>
+<li>IP定位：获得手机上网的IP之后，利用API获得ip的大概位置。</li>
+<li>WIFI\网络定位：利用手机信号塔和WIFI接入点定位</li>
+<li>AGPS定位（AssistedGPS：辅助全球卫星定位系统）：利用网络来辅助GPS定位。</li>
+</ul>
+<p>下面分别介绍一些这些定位方式。并给出部分源代码。</p>
+<h3 id="GPS定位"><a href="#GPS定位" class="headerlink" title="GPS定位"></a>GPS定位</h3><p> GPS定位就是利用手机的GPS模块搜索GPS卫星信号，优缺点如下：</p>
+<p>优点：</p>
+<ul>
+<li>定位精度高，在野外空旷没有网络信号的地方也可以使用。现在所有的手机设备都装有GPS模块，可以说是使用范围最广的一种。</li>
+<li>可以获得经纬度，速度，时间，海拔高度、方位等信息，信息比较全面。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li><p>比较耗电</p>
+</li>
+<li><p>定位速度受到环境条件的影响比较大，室外定位比较快，大概需要几秒的时间。室内定位速度比较慢，从GPS模块启动到获取第一次定位数据，可能需要比较长的时间。同时天气也会影响到定位的速度。</p>
+<p>下面是示例代码（注意先添加权限）<br><code>&lt;uses-permission android:name=&quot;android.permission.ACCESS_FINE_LOCATION&quot; /&gt;</code></p>
+<p>​</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">          //获得 LocationManager</div><div class="line"> LocationManager locationManager =(LocationManager)getSystemService(Context.LOCATION_SERVICE);  </div><div class="line"></div><div class="line">             //位置监听器</div><div class="line"></div><div class="line">         LocationListener listener = new LocationListener() &#123;</div><div class="line">             @Override</div><div class="line">             public void onLocationChanged(Location location) &#123;</div><div class="line">                 //这里处理当位置变化时的操作</div><div class="line">             &#125;</div><div class="line"></div><div class="line">             @Override</div><div class="line">             public void onStatusChanged(String provider, int status, Bundle extras) &#123;</div><div class="line">             //这里处理LocationProvier变化时的操作</div><div class="line">             &#125;</div><div class="line"></div><div class="line">             @Override</div><div class="line">             public void onProviderEnabled(String provider) &#123;</div><div class="line">             //这里处理当provider可用时的操作</div><div class="line">             &#125;</div><div class="line">             @Override</div><div class="line">             public void onProviderDisabled(String provider) &#123;</div><div class="line">             //这里处理当provider不可用时的操作</div><div class="line">             &#125;</div><div class="line">         &#125;;</div><div class="line"></div><div class="line">           //四个参数的含义：第一个是Provider，因为我们这里是GPS定位，所以传入GPS_PROVIDER，第二个是两次调用listener方法的最小时间间隔，设为0表示，以最快的速度刷新位置信息，第三个是位置变化的最小范围，第四个就是要回调的对象。</div><div class="line">locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,1000,0,listener);</div></pre></td></tr></table></figure>
+<p>​</p>
+<h3 id="WIFI-网络定位"><a href="#WIFI-网络定位" class="headerlink" title="WIFI\网络定位"></a>WIFI\网络定位</h3></li>
+</ul>
+<p>优点：</p>
+<ul>
+<li>定位速度要比GPS定位快很多</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li><p>需要连接网络</p>
+</li>
+<li><p>定位不如GPS定位准确，只能获得大概的位置</p>
+<p>​</p>
+<p>下面给出示例代码（注意权限的变化）</p>
+<p>(这个是新添加的）`<br>​</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">   //get LocationManager</div><div class="line">    LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);  </div><div class="line">        //位置监听器</div><div class="line">        LocationListener listener = new LocationListener() &#123;</div><div class="line">            @Override</div><div class="line">            public void onLocationChanged(Location location) &#123;</div><div class="line">                //这里处理当位置变化时的操作</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            @Override</div><div class="line">            public void onStatusChanged(String provider, int status, Bundle extras) &#123;</div><div class="line">                //这里处理LocationProvier变化时的操作</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            @Override</div><div class="line">            public void onProviderEnabled(String provider) &#123;</div><div class="line">                //这里处理当provider可用时的操作</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            @Override</div><div class="line">            public void onProviderDisabled(String provider) &#123;</div><div class="line">                /这里处理当provider不可用时的操作</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line"></div><div class="line">    //四个参数的含义：第一个是Provider，因为我们这里是GPS定位，所以传入GPS_PROVIDER，第二个是两次调用listener方法的最小时间间隔，设为0表示，以最快的速度刷新位置信息，第三个是位置变化的最小范围，第四个就是要回调的对象。</div><div class="line">//注意下面provider的变化</div><div class="line">                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,1000,0,listener);`</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="IP定位"><a href="#IP定位" class="headerlink" title="IP定位"></a>IP定位</h3><p> 原理：每个ip都有对应的地理位置，可以通过上网ip来获得大概的位置。<br>优点：</p>
+<ul>
+<li>定位速度要比GPS定位快一些</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li><p>需要连接网络</p>
+</li>
+<li><p>需要额外的API支持</p>
+</li>
+<li><p>定位不如GPS精确，只能获得地理位置信息。具体能获得些啥要看使用的API，一般来说能获得经纬度，时间以及衍生信息，比方说国家，城市等。</p>
+<p>​</p>
+<p>IP定位顾名思义分为两步，第一步是获得上网设备的ip，第二步就是利用这个ip来获取位置信息，利用下面这个api可直接获得位置信息：</p>
+<p><code>http://ip-api.com/json/</code><br>具体代码就不贴了，很简单。下面给出一个返回json字符串，我们看看能获得哪些信息：</p>
+</li>
+</ul>
+<blockquote>
+<p>{“as”:”AS4538 China Education and Research Network Center”,”city”:”Wuhan”,”country”:”China”,”countryCode”:”CN”,”isp”:”China Education and Research Network Center”,”lat”:30.5801,”lon”:116.2734,”org”:”GUANSHANKOU NANZI ZHIYE JISHU XUEYUAN “,”query”:”222.20.31.7”,”region”:”42”,”regionName”:”Hubei”,”status”:”success”,”timezone”:”Asia/Shanghai”,”zip”:””}</p>
+</blockquote>
+<p> 信息还比较丰富，国家，省，市，国家代码，网络类型，经纬度，ip，市区，根据这些就能确定大概的位置了，对于确定大概位置已经够用了。</p>
+<h3 id="AGPS定位"><a href="#AGPS定位" class="headerlink" title="AGPS定位"></a>AGPS定位</h3><p> AGPS定位就是利用基地台代送辅助卫星信息，缩减 GPS 芯片获取卫星信号的延迟时间，受遮盖的室内也能利用基地台信号弥补，减轻 GPS 芯片对卫星的依赖度。 一般来说这种定位方式都是系统系动在后台完成的，所以没有专门的Android API调用。</p>
+<p>优点：</p>
+<ul>
+<li>缩短定位时间：由于利用移动网络提供GPS辅助信息，不需要移动终端通过接收GPS卫星广播数据。由于卫星广播信道速率非常低，信号强度非常弱，这个时间通常会非常长。</li>
+<li>降低终端耗电量：由于不需要对卫星进行全频段扫描和跟踪，定位时间缩短，因此终端的耗电量大大降低。</li>
+<li>提升定位灵敏度：在靠近建筑物或者天气不好等相对恶劣环境下，由于有网络辅助数据，终端可直接锁定卫星定位，而此时GPS卫星信号非常微弱，独立GPS定位模式则往往终端会因为不能接收完所有的卫星星历和时钟等参数而导致定位失败。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>需要数据流量</li>
+</ul>
+<h2 id="最后说一下纠偏的问题"><a href="#最后说一下纠偏的问题" class="headerlink" title="最后说一下纠偏的问题"></a>最后说一下纠偏的问题</h2><h3 id="为啥要纠偏？"><a href="#为啥要纠偏？" class="headerlink" title="为啥要纠偏？"></a>为啥要纠偏？</h3><p> 一般来说我们的获得的准确经纬度坐标叫做WGS-84坐标，但是出于国家保密需要，会使用SM模组对这个GPS坐标做一个非线性加偏（￥10），变成GCJ-02，又称火星坐标。反映到地图上就是，你输入了天安门的坐标，结果发现这个坐标上是上海火车站。GPS坐标是正确的，但是放到地图上就不准。为了解决这个问题，把GPS坐标做了同样的加偏，这样GPS和地图就偏到一起了，也就实现了定位。<br> 说得通俗一点，你和你朋友去光谷玩，约在资本大厦前面见面，结果城管用SM牌三轮车把你朋友拉到了天河影城，并收了他十块钱。你到了资本大厦前面没看见你朋友，就给了城管十块钱，让他也把你拉到了天河影城。然后你俩就见面了。<br> 现在国内的所有能接收GPS信号的行货设备（手机、平板、手持GPS设备等）都要进行加偏，所以当使用国内设备产生的GPS信息标在GOOGLE地图上时，因为GOOGLE 地图没有加偏，所以位置信息是不准确的。需要进行纠偏。但是如果标在经过加偏的地图上就没有这个问题</p>
+<h3 id="如何纠偏"><a href="#如何纠偏" class="headerlink" title="如何纠偏"></a>如何纠偏</h3><blockquote>
+<p><a href="https://www.google.com.hk/search?safe=strict&amp;q=gps%E7%BA%A0%E5%81%8F%E7%AE%97%E6%B3%95&amp;oq=gps%E7%BA%A0%E5%81%8F%E7%AE%97%E6%B3%95&amp;gs_l=serp.3...377144.382403.0.382826.24.17.1.0.0.0.713.1782.4-1j1j1.3.0....0...1.1j4.64.serp..22.2.647...0j0i5i30k1.f4K_FChDRds" target="_blank" rel="external">https://www.google.com.hk/search?safe=strict&amp;q=gps%E7%BA%A0%E5%81%8F%E7%AE%97%E6%B3%95&amp;oq=gps%E7%BA%A0%E5%81%8F%E7%AE%97%E6%B3%95&amp;gs_l=serp.3…377144.382403.0.382826.24.17.1.0.0.0.713.1782.4-1j1j1.3.0….0…1.1j4.64.serp..22.2.647…0j0i5i30k1.f4K_FChDRds</a></p>
+</blockquote>
+<p>参考资料：</p>
+<blockquote>
+<p>GPS定位原理：<a href="http://www.cnblogs.com/lcw/p/3572628.html" target="_blank" rel="external">http://www.cnblogs.com/lcw/p/3572628.html</a></p>
+<p>AGPS定位：<a href="http://www.apkbus.com/thread-116655-1-1.html" target="_blank" rel="external">http://www.apkbus.com/thread-116655-1-1.html</a></p>
+<p>GPS纠偏以及偏移原因：<a href="http://yanue.net/post-121.html" target="_blank" rel="external">http://yanue.net/post-121.html</a> </p>
+</blockquote>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a  href="/2017/07/17/Android定位总结/">Android定位总结</a></p>
+        <p><span>文章作者:</span><a  href="/" title="访问 QiMeng Wang 的个人博客">QiMeng Wang</a></p>
+        <p><span>发布时间:</span>2017年07月17日 - 23时32分</p>
+        <p><span>最后更新:</span>2017年07月17日 - 23时45分</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2017/07/17/Android定位总结/" title="Android定位总结">http://yoursite.com/2017/07/17/Android定位总结/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://yoursite.com/2017/07/17/Android定位总结/　　作者: QiMeng Wang" title=""></span>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)" target = "_blank">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+<nav id="article-nav">
+  
+  
+    <a  href="/2017/07/17/MemoryManagement/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">MemoryManagement</div>
+      <strong class="article-nav-caption">></strong>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+    <strong class="toc-title">文章目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Android定位总结"><span class="toc-number">1.</span> <span class="toc-text">Android定位总结</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#常用的几种定位方式"><span class="toc-number">1.1.</span> <span class="toc-text">常用的几种定位方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#GPS定位"><span class="toc-number">1.1.1.</span> <span class="toc-text">GPS定位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#WIFI-网络定位"><span class="toc-number">1.1.2.</span> <span class="toc-text">WIFI\网络定位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IP定位"><span class="toc-number">1.1.3.</span> <span class="toc-text">IP定位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AGPS定位"><span class="toc-number">1.1.4.</span> <span class="toc-text">AGPS定位</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#最后说一下纠偏的问题"><span class="toc-number">1.2.</span> <span class="toc-text">最后说一下纠偏的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#为啥要纠偏？"><span class="toc-number">1.2.1.</span> <span class="toc-text">为啥要纠偏？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#如何纠偏"><span class="toc-number">1.2.2.</span> <span class="toc-text">如何纠偏</span></a></li></ol></li></ol></li></ol>
+</div>
+<style>
+    .left-col .switch-btn {
+        display: none;
+    }
+    .left-col .switch-area {
+        display: none;
+    }
+</style>
+<input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script>
+    var valueHide = "隐藏目录";
+    var valueShow = "显示目录";
+    if ($(".left-col").is(":hidden")) {
+        $("#tocButton").attr("value", valueShow);
+    }
+    $("#tocButton").click(function() {
+        if ($("#toc").is(":hidden")) {
+            $("#tocButton").attr("value", valueHide);
+            $("#toc").slideDown(320);
+            $(".switch-btn, .switch-area").fadeOut(300);
+        }
+        else {
+            $("#tocButton").attr("value", valueShow);
+            $("#toc").slideUp(350);
+            $(".switch-btn, .switch-area").fadeIn(500);
+        }
+    })
+    if ($(".toc").length < 1) {
+        $("#toc, #tocButton").hide();
+        $(".switch-btn, .switch-area").show();
+    }
+</script>
+
+
+
+
+<div class="bdsharebuttonbox">
+	<a href="#" class="fx fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="fx fa-weixin bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+	<a href="#" class="fx fa-qq bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+	<a href="#" class="fx fa-facebook-official bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+	<a href="#" class="fx fa-twitter bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+	<a href="#" class="fx fa-linkedin bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+	<a href="#" class="fx fa-files-o bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+</div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+
+
+    
+        <section class="changyan" id="comments">
+  <!--<div id="uyan_frame"></div>-->
+  <div id="SOHUCS"></div>
+  <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js"></script>
+  <script type="text/javascript">
+    window.changyan.api.config({
+      appid: 'xxxx',
+      conf: 'xxxxxxxxx'
+    });
+  </script>
+</section>
+    
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a  href="/" title="回到主页"><i class="fa fa-home"></i></a>
+        
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+        
+            <a  href="/2017/07/17/MemoryManagement/" title="下一篇: MemoryManagement">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/Android定位总结/">Android定位总结</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/MemoryManagement/">MemoryManagement</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/一个后台保持长连接并向服务器发送GPS信息的实现思路/">一个后台保持长连接并向服务器发送GPS信息的实现思路</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/开篇——如何安装Arch/">开篇-如何安装Arch</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/操作系统线程调度总结/">几种线程调度规则</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/JVM-虚拟机类加载机制/">JVM-虚拟机类加载机制</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/JVM-运行时数据区/">JVM-运行时数据区</a></li></ul>
+    <script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+    <script>
+        $(".post-list").addClass("toc-article");
+        // $(".post-list-item a").attr("target","_blank");
+        $("#post-nav-button > a:nth-child(2)").click(function() {
+            $(".fa-bars, .fa-times").toggle();
+            $(".post-list").toggle(300);
+            if ($(".toc").length > 0) {
+                $("#toc, #tocButton").toggle(200, function() {
+                    if ($(".switch-area").is(":visible")) {
+                        $("#toc, .switch-btn, .switch-area").toggle();
+                        $("#tocButton").attr("value", valueHide);
+                        }
+                    })
+            }
+            else {
+                $(".switch-btn, .switch-area").fadeToggle(300);
+            }
+        })
+    </script>
+
+
+
+
+    <script>
+        
+    </script>
+
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                &copy; 2017 QiMeng Wang
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank">Hexo</a><a href="https://github.com/maochunguang" target="_blank">Blog</a> by tommy
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" >极客到访数: 
+                            <span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>, </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit">本页阅读量: 
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+
+    </div>
+    <script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var backgroundnum = 4;
+            var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+            $("#mobile-nav").css({"background-image": backgroundimg,"background-size": "cover","background-position": "center"});
+            $(".left-col").css({"background-image": backgroundimg,"background-size": "cover","background-position": "center"});
+        })
+    </script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'xxxxx', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+	<script>
+	var _hmt = _hmt || [];
+	(function() {
+	  var hm = document.createElement("script");
+	  hm.src = "//hm.baidu.com/hm.js?xxxxxx";
+	  var s = document.getElementsByTagName("script")[0]; 
+	  s.parentNode.insertBefore(hm, s);
+	})();
+	</script>
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    $(document).ready(function() {
+        if ($("#comments").length < 1) {
+            $("#scroll > a:nth-child(2)").hide();
+        };
+    })
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+  <script language="javascript">
+    $(function() {
+        $("a[title]").each(function() {
+            var a = $(this);
+            var title = a.attr('title');
+            if (title == undefined || title == "") return;
+            a.data('title', title).removeAttr('title').hover(
+            function() {
+                var offset = a.offset();
+                $("<div id=\"anchortitlecontainer\"></div>").appendTo($("body")).html(title).css({
+                    top: offset.top - a.outerHeight() - 15,
+                    left: offset.left + a.outerWidth()/2 + 1
+                }).fadeIn(function() {
+                    var pop = $(this);
+                    setTimeout(function() {
+                        pop.remove();
+                    }, pop.text().length * 800);
+                });
+            }, function() {
+                $("#anchortitlecontainer").remove();
+            });
+        });
+    });
+</script>
+
+
+  </div>
+</body>
+</html>

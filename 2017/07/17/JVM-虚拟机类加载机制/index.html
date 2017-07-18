@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="baidu-site-verification" content="L6Lm9d5Crl"/>
+  
+  
+  
+  
+  <title>JVM-虚拟机类加载机制 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本文主要介绍了编译好的字节码是如何加载到虚拟机中的，在加载的过程中又发生了什么，虚拟机要做哪些准备和检查。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM-虚拟机类加载机制">
+<meta property="og:url" content="http://yoursite.com/2017/07/17/JVM-虚拟机类加载机制/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本文主要介绍了编译好的字节码是如何加载到虚拟机中的，在加载的过程中又发生了什么，虚拟机要做哪些准备和检查。">
+<meta property="og:image" content="http://os3tkttvu.bkt.clouddn.com/20160308184325593">
+<meta property="og:image" content="http://os3tkttvu.bkt.clouddn.com/2944028-3647b6d850e13644.jpg">
+<meta property="og:updated_time" content="2017-07-18T00:51:03.024Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JVM-虚拟机类加载机制">
+<meta name="twitter:description" content="本文主要介绍了编译好的字节码是如何加载到虚拟机中的，在加载的过程中又发生了什么，虚拟机要做哪些准备和检查。">
+<meta name="twitter:image" content="http://os3tkttvu.bkt.clouddn.com/20160308184325593">
+  
+    <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/img/favicon.png">
+  
+  
+  <link rel="stylesheet" href="//cdn.bootcss.com/animate.css/3.5.0/animate.min.css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  
+  
+      <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  
+  <!-- 加载特效 -->
+    <script src="/js/pace.js"></script>
+    <link href="/css/pace/pace-theme-flash.css" rel="stylesheet" />
+  <script>
+      var yiliaConfig = {
+          fancybox: true,
+          animate: true,
+          isHome: false,
+          isPost: true,
+          isArchive: false,
+          isTag: false,
+          isCategory: false,
+          open_in_new: false
+      }
+  </script>
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+        <a href="/" class="profilepic">
+            
+            <img lazy-src="/img/avatar.png" class="js-avatar">
+            
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">QiMeng Wang</a></h1>
+        </hgroup>
+        
+        
+            <form>
+                <input type="text" class="st-default-search-input search" id="local-search-input" placeholder=" Search...">
+            </form>
+            <div id="local-search-result"></div>
+        
+        
+            <script type="text/javascript">
+                (function() {
+                    'use strict';
+                    function getMatchData(keyword, data) {
+                        var matchData = [];
+                        for(var i =0;i<data.length;i++){
+                            if(data[i].title.toLowerCase().indexOf(keyword)>=0) 
+                                matchData.push(data[i])
+                        }
+                        return matchData;
+                    }
+                    var $input = $('#local-search-input');
+                    var $resultContent = $('#local-search-result');
+                    $input.keyup(function(){
+                        $.ajax({
+                            url: '/search.json',
+                            dataType: "json",
+                            success: function( json ) {
+                                var str='<ul class=\"search-result-list\">';                
+                                var keyword = $input.val().trim().toLowerCase();
+                                $resultContent.innerHTML = "";
+                                if ($input.val().trim().length <= 0) {
+                                    $resultContent.empty();
+                                    $('#switch-area').show();
+                                    return;
+                                }
+                                var results = getMatchData(keyword, json);
+                                if(results.length === 0){
+                                    $resultContent.empty();
+                                    $('#switch-area').show();
+                                    return;
+                                } 
+                                for(var i =0; i<results.length; i++){
+                                    str += "<li><a href='"+ results[i].url +"' class='search-result-title'>"+ results[i].title +"</a></li>";
+                                }
+                                str += "</ul>";
+                                $resultContent.empty();
+                                $resultContent.append(str);
+                                $('#switch-area').hide();
+                            }
+                        });
+                    });
+                })();
+            </script>
+        
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fl github"  target="_blank" href="/xxxxx" title="github">github</a>
+                            
+                                <a class="fl weibo"  target="_blank" href="/xxxxxxxx" title="weibo">weibo</a>
+                            
+                                <a class="fl rss"  target="_blank" href="/atom.xml" title="rss">rss</a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        
+                    </div>
+                </section>
+                
+                
+                
+                
+                <section class="switch-part switch-part3">
+                
+                    <div id="js-aboutme">Android/HUST</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>
+</div>
+
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">QiMeng Wang</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                
+                    <img lazy-src="/img/avatar.png" class="js-avatar">
+                
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">QiMeng Wang</a></h1>
+            </hgroup>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                <div class="social">
+                    
+                        <a class="github" target="_blank" href="/xxxxx" title="github">github</a>
+                    
+                        <a class="weibo" target="_blank" href="/xxxxxxxx" title="weibo">weibo</a>
+                    
+                        <a class="rss" target="_blank" href="/atom.xml" title="rss">rss</a>
+                    
+                </div>
+            </nav>
+        </header>                
+    </div>
+</nav>
+      <div class="body-wrap"><article id="post-JVM-虚拟机类加载机制" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a  href="/2017/07/17/JVM-虚拟机类加载机制/" class="article-date">
+      <time datetime="2017-07-17T23:32:11.000Z" itemprop="datePublished">2017-07-17</time>
+</a>
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      JVM-虚拟机类加载机制
+    </h1>
+  
+
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+
+        
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p>本文主要介绍了编译好的字节码是如何加载到虚拟机中的，在加载的过程中又发生了什么，虚拟机要做哪些准备和检查。<br><a id="more"></a></p>
+<h1 id="虚拟机类加载机制"><a href="#虚拟机类加载机制" class="headerlink" title="虚拟机类加载机制"></a>虚拟机类加载机制</h1><hr>
+<p>​    现在我们来学习一下JVM虚拟机中类的加载机制，也就是一个类是如何被加载进入虚拟机中的，在加载的过程中虚拟机会完成哪些工作。需要注意一点，这里我们说的类即Class并不是狭义的.class 文件，而是指的是一串二进制字节流，它具有一定的格式，可以被虚拟机识别。它可以来自.class文件，也可以来自jar包，也可以是从网络上下载下来的一段代码。下面首先来介绍一下类的加载时机。</p>
+<h2 id="类的加载时机"><a href="#类的加载时机" class="headerlink" title="类的加载时机"></a>类的加载时机</h2><p>​    类从加载到虚拟机内存中到卸载出内存为止，整个生命周期包括七个阶段，这七个阶段分别是加载（Loading）、验证（Verification）、准备（Preparation）、解析（Resolution）、初始化（Initialization）、使用（Using）和卸载（Unloading）七个阶段，其中验证准备解析三个部分统称为连接，七个阶段的发生顺序如图所示：</p>
+<p><img src="http://os3tkttvu.bkt.clouddn.com/20160308184325593" alt="img"></p>
+<p>​    在图中，加载、验证、准备、初始化和卸载这五个阶段的顺序是确定的，但是类的解析阶段则不一定，这里解析我们可以认为是获得类、方法等的实际内存地址的一个过程（具体内容后面会讲），这是为了支持Java中的动态绑定。这里我们说的五个阶段的执行顺序是确定的只是说他们的开始时间必须要按照这个顺序，但是一个过程的开始不必等到另一个过程结束，这些阶段通常都是相互交叉地混合式的进行的。</p>
+<p>​    Java虚拟机规范中没有对类的加载时机作出强制性的要求，但是对于初始化阶段进行了严格的规定，有且只有五种情况下必须立即对类进行“初始化”，这五种情况分别是：</p>
+<ul>
+<li><p>遇到new、getstatic、putstatic或者invokestatic这四条字节码指令时，如果没有进行过初始化，需要先触发初始化。这些指令是字节码指令，在什么情况下会生成这些字节码指令呢？使用new关键字实例化对象的时候、读取或者设置一个类的静态字段的时候（被final修饰、已经在编译期把结果放入常量池的静态字段除外），以及调用一个类的静态方法的时候。</p>
+</li>
+<li><p>使用java.lang.reflect包的方法对类进行反射调用的时候。</p>
+</li>
+<li><p>当初始化一个类的时候，需要先初始化父类。</p>
+</li>
+<li><p>当虚拟机启动时需要先初始化包含main方法的那个类。</p>
+</li>
+<li><p>当使用JDK1.7的动态语言支持的时候，如果一个java.lang.invoke.MethodHandle实例最后的解析结果是REF_getStatic、REF_putStatic、REF_invokeStatic的方法句柄，并且这个方法句柄所对应的类没有进行过初始化，则需要首先触发其初始化。</p>
+<p>这五种场景被称为对一个类的主动引用，除此之外所有引用类的方式都被称为被动引用，它们都不会触发初始化。下面举三个例子来帮助大家理解：</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">public class SuperClass&#123;</div><div class="line">	static&#123;</div><div class="line">      System.out.println(&quot;hello superclass&quot;);</div><div class="line">	&#125;</div><div class="line">	public static String a = &quot;hello&quot;;</div><div class="line">&#125;</div><div class="line">public class ChildClass extends SuperClass&#123;</div><div class="line">	static&#123;</div><div class="line">      System.out.println(&quot;hello childclass&quot;);</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line">public class Initialization&#123;</div><div class="line">  	public static void main(String[] args)&#123;</div><div class="line">      System.out.println(ChildClass.a);</div><div class="line">	&#125;  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>​    在这里我们省略了package语句和import语句。在这个例子中，我们运行之后发现，只有父类被初始化了。这是因为静态变量a是定义在父类中的，这里是读取了父类的静态字段，对应于上面的第一条。所以只有父类被初始化了。</p>
+<p> 下面一个例子是：</p>
+<p> <code>SuperClass[] sca = new SuperClass[10];</code></p>
+<p>​    在这个例子中，SuperClass仍然没有被初始化，但是在实际执行过程中，初始化的是另一个类，这个类由虚拟机自动生成，名称同样是SuperClass，这个类对用户代码来说不可见，直接继承于Object。另外，创建动作由字节码<code>newarray</code>触发。</p>
+<p>​    这个自动生成的类代表了一个元素类型为SuperClass（用户创建的类）的一维数组，数组中应有的属性和方法都在这个类中实现，也就相当于虚拟机帮我们创建了一个SuperClass的数组类，对数组的操作都转换成这个类中的方法，因此相对于使用数组指针来说可以更加方便地进行越界检查等，这也是相对于C/C++数组更加安全的原因。</p>
+<p>​    最后一个例子也是关于上面第一条的。我们知道不管是内部类还是其他类，在生成字节码文件的时候，每个类都会单独生成一个.class文件，一般的类是<code>类名.class</code> 内部类是<code>$类名.class</code> ，若类A中引用类B中定义的一个常量a，我们假定a的定义如下：</p>
+<p><code>public static final int a = 0;</code></p>
+<p>​    那么B类中的a在编译期会被复制到类A中的常量池中，带来的影响就是，A中对a的引用，实际上已经不是对B中a的引用，而是对自己常量池中同名常量a的引用。当我们在A中使用a时，不会触发B类的初始化。（更具体的说，A与B的class文件在编译完成后已经没有任何联系）</p>
+<p>​    接口的初始化过程与类只有第三条不同，接口在进行初始化时，不要求父接口先初始化，而是真正使用到父接口的时候才会初始化。</p>
+<h2 id="类加载的过程"><a href="#类加载的过程" class="headerlink" title="类加载的过程"></a>类加载的过程</h2><h3 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h3><p> 在加载阶段，虚拟机主要完成以下三件事情</p>
+<ul>
+<li>通过一个类的全限定名来获取此类的二进制字节流</li>
+<li>将字节流代表的静态存储结构转化为方法区的运行时数据结构</li>
+<li><p>在内存中生成一个代表这个类的java.lang.Class对象，作为方法区的这个类的各种数据的访问入口</p>
+<p>​正如我们之前提到的，这里的二进制字节流可以来自.class文件，也可以来自zip文件（也就是我们日后的JAR、EAR、WAR格式的基础）、网络中获取（Applet）或者是运行时计算生成等等。</p>
+<p>对于数组类而言，他本身并不是类加载器创建的，而是Java虚拟机直接创建的。但是数组类与类加载器仍然有很密切的关系，因为数组类的元素类型（Element Type，指的是数组去掉所有维度的类型）最终是由类加载器加载的，一个数组类（下面简称为C）的创建过程遵循以下的规则：</p>
+</li>
+<li><p>如果数组的组件类型（Component Type，指的是数组去掉一个维度的类型）是引用类型，那就递归采用本节中定义的加载过程去加载组件类型，数组C将在加载该 组件类型 的 类加载器 的 类名称空间 上被标识。</p>
+</li>
+<li>如果组件类型不是引用类型，虚拟机将会把数组C与引导类加载器关联</li>
+<li>数组类的可见性与它的组件类的可见性一致，如果组件类型不是引用类型，那数组类的可见性将默认为public</li>
+</ul>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>​    验证阶段的目的是为了保证一方面class字节流是符合当前虚拟机的要求的，另一方面不会危害虚拟机自身的安全。验证的过程又包含以下几个阶段：</p>
+<ul>
+<li>文件格式验证：这一阶段的验证是为了保证字节流能正确解析并存储于方法区之内，格式上符合描述一个Java类信息的要求（魔数、主次版本号等等），这一阶段是对字节流进行验证，之后，字节流将被转换成方法区的动态数据结构，后面的检查都是基于这个数据结构进行的。</li>
+<li>元数据验证：第二阶段是对方法区的数据结构进行语义分析，也就是对类的元数据进行语义校验，保证符合Java语言规范。</li>
+<li>字节码验证：这一个阶段是最复杂的一个阶段，保证类不会做出危害虚拟机安全的事件。</li>
+<li>符号引用验证：这个阶段的验证将发生在虚拟机将符号引用转换成直接引用的时候。通俗的来讲是确保能够找的到所引用的符号。</li>
+</ul>
+<h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3><p>​    准备阶段是为类变量分配内存并设置初始值的阶段，变量所使用的内存将在方法区内进行分配，有三点需要说明：</p>
+<ul>
+<li>进行内存分配的仅仅是类变量（被static修饰的），不包括实例变量，实例变量将在对象实例化的时候在Java堆中进行分配。</li>
+<li>初始值并不是程序中设定的初始值。比如说<code>public static int value = 9;</code> 这里初始化之后的value是0，而不是9。这是因为将value赋值为9的语句存放在类构造器中，所以这些动作将在初始化阶段完成。</li>
+<li>但是如果value是final修饰的，也就是说后面不会有变化，在准备阶段会完成初始化，赋值为9。</li>
+</ul>
+<h3 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h3><p>​    解析阶段就是虚拟机将常量池内的符号引用替换为直接引用的过程。在这里我们首先来介绍一下符号引用和直接引用</p>
+<ul>
+<li>符号引用：符号引用以一组符号来描述所引用的目标。符号引用与虚拟机实现的内存布局无关，所引用的目标不一定加载到内存中。</li>
+<li>直接引用：直接引用可以是指向目标的指针、相对偏移量或者是一个间接定位到目标的句柄。直接引用是和虚拟机的内存布局相关的，同一个符号引用在不同的虚拟机上翻译成的直接引用一般不同。所引用的目标必定已经在内存中存在。</li>
+</ul>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>​    初始化阶段就是根据程序员通过程序制定的主观计划去初始化类变量和其他资源。</p>
+<h2 id="类与类加载器"><a href="#类与类加载器" class="headerlink" title="类与类加载器"></a>类与类加载器</h2><p>​    对于任意一个类，都需要由类本身和它的加载器来确定类在虚拟机中的唯一身份，换句话说，即使是同一个类，只要加载他们的虚拟机不同，那么他们在虚拟机看来，就不是同一个类。这里说的“同一”包括Class对象的<code>equals()</code>方法、<code>isAssignableFrom()</code>方法、<code>isInstance()</code>方法的返回结果也包括使用<code>instanceof</code>关键字的判定结果。</p>
+<h2 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h2><p>​    说到双亲委派模型，首先要介绍一下下面这张图</p>
+<p><img src="http://os3tkttvu.bkt.clouddn.com/2944028-3647b6d850e13644.jpg" alt="img"></p>
+<p>​    这张图里面有四类ClassLoader，下面一一介绍。</p>
+<ul>
+<li>Bootstrap ClassLoader: 启动类加载器，使用C++实现，是虚拟机自身的一部分（其余类加载器都是Java语言实现，独立于虚拟机外部）。负责加载\lib 目录中的或者被-Xbootclasspath参数所指定的路径中的且是虚拟机识别的（仅仅按照文件名识别，名字不符合的不会加载）加载到虚拟机内存中。无法被Java程序直接引用。</li>
+<li>Extension ClassLoader：扩展类加载器，负责加载\lib\ext目录中的或者被java.ext.dirs系统变量指定的路径中的所有类库，开发者可以直接使用。</li>
+<li>Application ClassLoader：应用程序类加载器，负责加载用户类路径（ClassPath）上所指定的类库，开发者可以直接使用这个类加载器。如果没有自定义过类加载器，这个加载器就是默认加载器。</li>
+<li>User ClassLoader：自定义类加载器。</li>
+</ul>
+<p>​    那么说完这几个类加载器之后双亲委派模型就很简单了。当一个类加载器要加载一个类时，他首先会把这个加载任务托付给他的父类来完成，如果父类无法完成的话再由子类来完成。因此每一个加载请求都会从上到下进行尝试加载，这样做的好处是显而易见的，它可以保证<strong>Java类随着它的类加载器一起具备了一种带有优先级的层次关系</strong>。前面提到过一个类的身份由其本身和它的类加载器一同决定，双亲委派模型就保证了同一优先级的类具有相同的类加载器，在虚拟机看来，他们都是“同一”个。 </p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a  href="/2017/07/17/JVM-虚拟机类加载机制/">JVM-虚拟机类加载机制</a></p>
+        <p><span>文章作者:</span><a  href="/" title="访问 QiMeng Wang 的个人博客">QiMeng Wang</a></p>
+        <p><span>发布时间:</span>2017年07月17日 - 23时32分</p>
+        <p><span>最后更新:</span>2017年07月18日 - 00时51分</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2017/07/17/JVM-虚拟机类加载机制/" title="JVM-虚拟机类加载机制">http://yoursite.com/2017/07/17/JVM-虚拟机类加载机制/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://yoursite.com/2017/07/17/JVM-虚拟机类加载机制/　　作者: QiMeng Wang" title=""></span>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)" target = "_blank">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+<nav id="article-nav">
+  
+    <a  href="/2017/07/17/操作系统线程调度总结/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption"><</strong>
+      <div class="article-nav-title">
+        
+          几种线程调度规则
+        
+      </div>
+    </a>
+  
+  
+    <a  href="/2017/07/17/JVM-运行时数据区/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">JVM-运行时数据区</div>
+      <strong class="article-nav-caption">></strong>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+    <strong class="toc-title">文章目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#虚拟机类加载机制"><span class="toc-number">1.</span> <span class="toc-text">虚拟机类加载机制</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#类的加载时机"><span class="toc-number">1.1.</span> <span class="toc-text">类的加载时机</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类加载的过程"><span class="toc-number">1.2.</span> <span class="toc-text">类加载的过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#加载"><span class="toc-number">1.2.1.</span> <span class="toc-text">加载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#验证"><span class="toc-number">1.2.2.</span> <span class="toc-text">验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#准备"><span class="toc-number">1.2.3.</span> <span class="toc-text">准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解析"><span class="toc-number">1.2.4.</span> <span class="toc-text">解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#初始化"><span class="toc-number">1.2.5.</span> <span class="toc-text">初始化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类与类加载器"><span class="toc-number">1.3.</span> <span class="toc-text">类与类加载器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#双亲委派模型"><span class="toc-number">1.4.</span> <span class="toc-text">双亲委派模型</span></a></li></ol></li></ol>
+</div>
+<style>
+    .left-col .switch-btn {
+        display: none;
+    }
+    .left-col .switch-area {
+        display: none;
+    }
+</style>
+<input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script>
+    var valueHide = "隐藏目录";
+    var valueShow = "显示目录";
+    if ($(".left-col").is(":hidden")) {
+        $("#tocButton").attr("value", valueShow);
+    }
+    $("#tocButton").click(function() {
+        if ($("#toc").is(":hidden")) {
+            $("#tocButton").attr("value", valueHide);
+            $("#toc").slideDown(320);
+            $(".switch-btn, .switch-area").fadeOut(300);
+        }
+        else {
+            $("#tocButton").attr("value", valueShow);
+            $("#toc").slideUp(350);
+            $(".switch-btn, .switch-area").fadeIn(500);
+        }
+    })
+    if ($(".toc").length < 1) {
+        $("#toc, #tocButton").hide();
+        $(".switch-btn, .switch-area").show();
+    }
+</script>
+
+
+
+
+<div class="bdsharebuttonbox">
+	<a href="#" class="fx fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="fx fa-weixin bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+	<a href="#" class="fx fa-qq bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+	<a href="#" class="fx fa-facebook-official bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+	<a href="#" class="fx fa-twitter bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+	<a href="#" class="fx fa-linkedin bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+	<a href="#" class="fx fa-files-o bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+</div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+
+
+
+    
+        <section class="changyan" id="comments">
+  <!--<div id="uyan_frame"></div>-->
+  <div id="SOHUCS"></div>
+  <script charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/changyan.js"></script>
+  <script type="text/javascript">
+    window.changyan.api.config({
+      appid: 'xxxx',
+      conf: 'xxxxxxxxx'
+    });
+  </script>
+</section>
+    
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a  href="/2017/07/17/操作系统线程调度总结/" title="上一篇: 几种线程调度规则">
+                <i class="fa fa-angle-left"></i>
+            </a>
+        
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+        
+            <a  href="/2017/07/17/JVM-运行时数据区/" title="下一篇: JVM-运行时数据区">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/Android定位总结/">Android定位总结</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/MemoryManagement/">MemoryManagement</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/一个后台保持长连接并向服务器发送GPS信息的实现思路/">一个后台保持长连接并向服务器发送GPS信息的实现思路</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/开篇——如何安装Arch/">开篇-如何安装Arch</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/操作系统线程调度总结/">几种线程调度规则</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/JVM-虚拟机类加载机制/">JVM-虚拟机类加载机制</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/17/JVM-运行时数据区/">JVM-运行时数据区</a></li></ul>
+    <script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+    <script>
+        $(".post-list").addClass("toc-article");
+        // $(".post-list-item a").attr("target","_blank");
+        $("#post-nav-button > a:nth-child(2)").click(function() {
+            $(".fa-bars, .fa-times").toggle();
+            $(".post-list").toggle(300);
+            if ($(".toc").length > 0) {
+                $("#toc, #tocButton").toggle(200, function() {
+                    if ($(".switch-area").is(":visible")) {
+                        $("#toc, .switch-btn, .switch-area").toggle();
+                        $("#tocButton").attr("value", valueHide);
+                        }
+                    })
+            }
+            else {
+                $(".switch-btn, .switch-area").fadeToggle(300);
+            }
+        })
+    </script>
+
+
+
+
+    <script>
+        
+    </script>
+
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                &copy; 2017 QiMeng Wang
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank">Hexo</a><a href="https://github.com/maochunguang" target="_blank">Blog</a> by tommy
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" >极客到访数: 
+                            <span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>, </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit">本页阅读量: 
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+
+    </div>
+    <script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var backgroundnum = 4;
+            var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+            $("#mobile-nav").css({"background-image": backgroundimg,"background-size": "cover","background-position": "center"});
+            $(".left-col").css({"background-image": backgroundimg,"background-size": "cover","background-position": "center"});
+        })
+    </script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'xxxxx', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+	<script>
+	var _hmt = _hmt || [];
+	(function() {
+	  var hm = document.createElement("script");
+	  hm.src = "//hm.baidu.com/hm.js?xxxxxx";
+	  var s = document.getElementsByTagName("script")[0]; 
+	  s.parentNode.insertBefore(hm, s);
+	})();
+	</script>
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    $(document).ready(function() {
+        if ($("#comments").length < 1) {
+            $("#scroll > a:nth-child(2)").hide();
+        };
+    })
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+  <script language="javascript">
+    $(function() {
+        $("a[title]").each(function() {
+            var a = $(this);
+            var title = a.attr('title');
+            if (title == undefined || title == "") return;
+            a.data('title', title).removeAttr('title').hover(
+            function() {
+                var offset = a.offset();
+                $("<div id=\"anchortitlecontainer\"></div>").appendTo($("body")).html(title).css({
+                    top: offset.top - a.outerHeight() - 15,
+                    left: offset.left + a.outerWidth()/2 + 1
+                }).fadeIn(function() {
+                    var pop = $(this);
+                    setTimeout(function() {
+                        pop.remove();
+                    }, pop.text().length * 800);
+                });
+            }, function() {
+                $("#anchortitlecontainer").remove();
+            });
+        });
+    });
+</script>
+
+
+  </div>
+</body>
+</html>

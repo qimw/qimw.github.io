@@ -3,6 +3,8 @@ title: Android定位总结
 date: 2017-07-17 00:00:00
 tags:
 - Android
+categories: 
+- Android
 ---
 
 本文介绍了Android中常用的几种定位方式，仅供参考。

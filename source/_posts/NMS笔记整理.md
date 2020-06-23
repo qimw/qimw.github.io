@@ -3,6 +3,9 @@ title: NMS笔记整理
 date: 2020-06-20 18:49:29
 tags:
 - Deep Learning Notes
+categories:
+- Deep Learning Notes
+- Notes
 mathjax: true
 ---
 
@@ -21,7 +24,7 @@ NMS的基本思路是:
 - 计算box与剩下所有box的iou
 - 过滤掉所有iou大于阈值的box,保留剩下box的index
 - 重复2直到剩下的index为空
-```
+```python
 import numpy as np
 def horizontal_nms(boxes, threshold):
     # check
@@ -85,7 +88,7 @@ $s_i = \left\{ \begin{aligned} s_i & ,  iou(M, b_i) < N_t \\ 0 & , iou(M,b_i) \g
 
 代码实现如下
 
-```
+```python
 import numpy as np
 def soft_nms(boxes, sigma=0.5, Nt=0.1, threshold=0.001, method=1):
     N = boxes.shape[0]

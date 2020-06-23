@@ -3,6 +3,10 @@ title: Smoothed Dilated Convolutions
 date: 2020-06-20 18:38:15
 tags:
 - Deep Learning Notes
+categories:
+- Deep Learning Notes
+- Paper
+- Fundamental
 ---
 Smoothed Dilated Convolutions 阅读笔记
 <!--more-->

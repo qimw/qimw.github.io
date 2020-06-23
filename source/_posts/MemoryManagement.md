@@ -3,6 +3,8 @@ title: MemoryManagement
 date: 2017-07-07 00:00:00
 tags:
 - Operation System
+categories: 
+- Operation System
 ---
 
 操作系统内存管理总结

@@ -3,7 +3,8 @@ title: 如何安装Arch
 date: 2017-07-07 00:00:00
 tags: 
 - Linux
-categories: Linux
+categories: 
+- Linux
 ---
 
 # 如何安装Arch

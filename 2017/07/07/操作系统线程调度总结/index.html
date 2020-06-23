@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="几种线程调度规则">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统线程调度总结">
+<meta property="og:url" content="http://yoursite.com/2017/07/07/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="QimengWang">
+<meta property="og:description" content="几种线程调度规则">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-07-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-06-20T09:42:16.117Z">
+<meta property="article:author" content="QimengWang">
+<meta property="article:tag" content="Operation System">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2017/07/07/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>操作系统线程调度总结 | QimengWang</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">QimengWang</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/07/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="QimengWang">
+      <meta itemprop="description" content="QimengWang's blog site.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="QimengWang">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          操作系统线程调度总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-07-07 00:00:00" itemprop="dateCreated datePublished" datetime="2017-07-07T00:00:00+08:00">2017-07-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-06-20 17:42:16" itemprop="dateModified" datetime="2020-06-20T17:42:16+08:00">2020-06-20</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>几种线程调度规则</p>
+<a id="more"></a>
+
+<h1 id="操作系统线程调度规则总结"><a href="#操作系统线程调度规则总结" class="headerlink" title="操作系统线程调度规则总结"></a>操作系统线程调度规则总结</h1><h2 id="几种线程调度规则"><a href="#几种线程调度规则" class="headerlink" title="几种线程调度规则"></a>几种线程调度规则</h2><h3 id="时间均分类"><a href="#时间均分类" class="headerlink" title="时间均分类"></a>时间均分类</h3><ol>
+<li><p>First In Fitst Out（FIFO）：先进先出思想，也就是队列的思想，先创建的任务先执行，执行完毕之后再执行下一个任务。</p>
+</li>
+<li><p>Shortest Job First (SJF)：最短的任务<strong>优先</strong>运行，但是不会打断当前的任务。比方说，现在正在运行一个100ms的任务，然后又到了10ms和20ms的两个任务，那么现在100ms继续执行，后面两个任务按照时间由短到长的顺序排列按次序执行。</p>
+</li>
+<li><p>Shortest Time-to-Completion First (STCF)：需要时间最短的任务首先运行。与上一种调度规则不同的地方在于，10ms和20ms的任务到达时，系统就会判断，因为<em>10ms&lt;20ms&lt;100ms的剩余部分</em>的原因，所以现在100ms的任务被打断，转而执行10ms的任务，也就是现在的顺序是10ms，20ms，100ms的剩余部分。原版表述是：Any time a newjob enters the system, it determines of the remaining jobs and new job,which has the least time left, and then schedules that one.</p>
+</li>
+<li><p>Round Robin（RR）：轮询调度，也就是引入了我们的熟知的时间片机制，当一个任务用完给它的时间片之后，就执行下一个任务，直到所有任务都已经完成。</p>
+</li>
+<li><p>如果考虑I/O的话，当一个任务进行I/O操作时，cpu在等待期间可以执行另一个任务。</p>
+</li>
+<li><p>The Multi-Level Feedback Queue（MLFQ）多级反馈队列基本规则（这种规则用的最多，包括BSD UNIX derivatives , Solaris, and Windows NT and subsequent Windows operating systems，但是不同的平台有不同的具体实现方式，下面的只是列出基本的规则）：</p>
+</li>
+<li><p>如果优先级A&gt;B的话，A先运行</p>
+</li>
+<li><p>如果AB优先级一样的话，参考RR规则</p>
+</li>
+<li><p>当一个进程创建之后，加入最高优先级队列。（这样就保证了耗时最短的任务优先完成）</p>
+</li>
+<li><p>不论在时间片内释放多少次cpu，每当用完时间片后就将它的优先级降低（防止有的进程game cpu，也就是在时间片即将用完的时候马上释放cpu，然后在下一个时间片开始的时候马上申请cpu，让cpu以为它每次都用不完时间片。）</p>
+</li>
+<li><p>每隔一段时间就将所有的进程优先级调到最高（因为有的进程可能刚开始的时候是非常耗cpu的，但是后面就常常用不完分配给他的时间片。相当于重新给进程排序）</p>
+</li>
+<li><p>MLFQ的一些优化措施：</p>
+</li>
+<li><p>因为优先级高的任务经常在没有用完时间片的时候就会释放cpu，所以给它们的时间片短一点，而那些优先级低的任务因为运行的机会本来就少，所以时间片可以适当多一点。</p>
+</li>
+<li><p>上面提到的MLFQ调度方式具体有几个优先级，每个优先级的时间片是多少，每隔多长时间重新调整一下所有进程的优先级这些规定并不是死的，可以都把他们放在一个配置文件中，让用户去进行更改。</p>
+</li>
+<li><p>一些系统也可一采用advice的方式，也就是说用户可以指定某个进程的优先级，向系统<em>建议</em>提高或者降低某个进程的优先级。</p>
+</li>
+<li><p>MLFQ的英文表述，这个可能看起来更清楚一点</p>
+</li>
+</ol>
+<ul>
+<li><p>Rule 1: If Priority(A) &gt; Priority(B), A runs (B doesn’t).</p>
+</li>
+<li><p>Rule 2: If Priority(A) = Priority(B), A &amp; B run in RR.</p>
+</li>
+<li><p>Rule 3: When a job enters the system, it is placed at the highest priority (the topmost queue).</p>
+</li>
+<li><p>Rule 4: Once a job uses up its time allotment at a given level (regardless of how many times it has given up the CPU), its priority isreduced (i.e., it moves down one queue).</p>
+</li>
+<li><p>Rule 5: After some time period S, move all the jobs in the system to the topmost queue.</p>
+</li>
+</ul>
+<h3 id="时间按比例分配类"><a href="#时间按比例分配类" class="headerlink" title="时间按比例分配类"></a>时间按比例分配类</h3><ol>
+<li>彩票调度(<em>Lottery</em> <em>Scheduling</em>) ：给每个进程分配一定数量的token，该进程根据token所占token总数的比例来决定运行概率。一个实例就是C/S架构的程序，客户端向服务端发送请求，同时客户端把所有的token给了服务端，那么服务端运行机会就会变大。服务端完成之后将token和结果一并返回给客户端，那么客户端的运行机会也会变大。</li>
+<li>大步调度（没有查到中文叫啥）（Stride scheduling）：彩票调度的方法的一个弊端就是，如果一个进程占有的token很少的话，比方说是1，总体是100,那么极有可能在很长很长一段时间内这个进程是不能运行的。也就是说进程实际运行的概率并不等于token比例。stride scheduling 的一个思想就是用token总数除以每个线程所占token数（称作步）。然后每个线程分配一个计数器（初值都为0），每运行一次就给计数器加上一个步，每次运行都从所有进程中挑计数器数值最小的运行。这样在一个运行周期内就可以保证所有的进程都会有机会运行。但是缺点就是，如果中途加入一个进程的话，它的计数器的值不好确定（如果为零的话，那么在相当长一段时间内这个进程会独占cpu）。但是彩票调度就不会出现这种问题。 </li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Operation-System/" rel="tag"># Operation System</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/07/07/JVM%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA/" rel="prev" title="JVM运行时数据区">
+      <i class="fa fa-chevron-left"></i> JVM运行时数据区
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/07/07/%E5%A6%82%E4%BD%95%E5%AE%89%E8%A3%85Arch/" rel="next" title="如何安装Arch">
+      如何安装Arch <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#操作系统线程调度规则总结"><span class="nav-number">1.</span> <span class="nav-text">操作系统线程调度规则总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#几种线程调度规则"><span class="nav-number">1.1.</span> <span class="nav-text">几种线程调度规则</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#时间均分类"><span class="nav-number">1.1.1.</span> <span class="nav-text">时间均分类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#时间按比例分配类"><span class="nav-number">1.1.2.</span> <span class="nav-text">时间按比例分配类</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">QimengWang</p>
+  <div class="site-description" itemprop="description">QimengWang's blog site.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">QimengWang</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
